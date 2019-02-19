@@ -1,10 +1,25 @@
-let get = (data, key) => {
+const get = (data, key) => {
   key = key.split('.')
   while (key.length) {
     let k = key.shift()
     data = data[k]
   }
   return data
+}
+
+const fold = function * (row, data) {
+  for (let [key, value] of data.entries()) {
+    let _row = row.slice()
+    _row.push(key)
+    /* istanbul ignore else */
+    if (typeof value === 'number') {
+      yield _row.concat([value])
+    } else if (value instanceof Map) {
+      yield * fold(_row, value)
+    } else {
+      throw new Error(`Interal data error: ${key} not Map or number`)
+    }
+  }
 }
 
 class Collection {
@@ -14,7 +29,28 @@ class Collection {
     this._indexes = {}
     this._indexData = {}
   }
-  add (row) {
+  set (row) {
+    let data = this.data
+    let args = this.args.slice()
+    let indexKey = []
+    while (args.length > 1) {
+      let key = args.shift()
+      let value = get(row, key)
+      if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+      if (!data.has(value)) {
+        data.set(value, new Map())
+      }
+      data = data.get(value)
+      indexKey.push(value)
+    }
+    let key = args[0]
+    let value = get(row, key)
+    indexKey = JSON.stringify(indexKey)
+    this._writeIndexes(indexKey, row)
+    if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+    data.set(key, value)
+  }
+  count (row) {
     let data = this.data
     let args = this.args.slice()
     let indexKey = []
@@ -46,15 +82,16 @@ class Collection {
   lookup (indexKey, complexKey) {
     return this._indexData[indexKey][JSON.stringify(complexKey)]
   }
-  rowToObject (row) {
-    let args = this.args.slice()
+  rowToObject (row, args, complexKey) {
+    args = args || this.args.slice()
     let ret = {}
     while (args.length) {
       let k = args.shift()
       ret[k] = row.shift()
     }
+    complexKey = complexKey || Object.values(ret)
     for (let _k of Object.keys(this._indexData)) {
-      ret[_k] = this.lookup(_k, Object.values(ret))
+      ret[_k] = this.lookup(_k, complexKey)
     }
     ret.count = row[0]
     return ret
@@ -69,21 +106,7 @@ class Collection {
     return iter()
   }
   rows () {
-    let iter = function * (row, data) {
-      for (let [key, value] of data.entries()) {
-        let _row = row.slice()
-        _row.push(key)
-        /* istanbul ignore else */
-        if (typeof value === 'number') {
-          yield _row.concat([value])
-        } else if (value instanceof Map) {
-          yield * iter(_row, value)
-        } else {
-          throw new Error(`Interal data error: ${key} not Map or number`)
-        }
-      }
-    }
-    return iter([], this.data)
+    return fold([], this.data)
   }
   unique () {
     const self = this
@@ -113,6 +136,23 @@ class Collection {
   index (key, fn) {
     this._indexes[key] = fn
     this._indexData[key] = {}
+  }
+  reduce (fn) {
+    const self = this
+    let prev = {}
+    let iter = function * () {
+      for (let key of self.data.keys()) {
+        for (let row of fold([], self.data.get(key))) {
+          let complexKey = [key].concat(row.slice(0, row.length - 1))
+          let strKey = JSON.stringify(row.slice(0, row.length - 1))
+          let data = self.rowToObject(row, self.args.slice(1), complexKey)
+          let value = fn(prev[strKey], data)
+          yield value
+          prev[strKey] = value
+        }
+      }
+    }
+    return iter()
   }
 }
 

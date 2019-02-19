@@ -4,12 +4,21 @@
   "description": "Utilities for metrics processing",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint test.js index.js",
+    "fix": "eslint test.js index.js --fix",
+    "pretest": "npm run lint",
     "test": "tap test.js --100"
   },
   "keywords": [],
   "author": "Mikeal Rogers <mikeal.rogers@gmail.com> (https://www.mikealrogers.com/)",
   "license": "(Apache-2.0 AND MIT)",
   "devDependencies": {
+    "eslint": "^5.14.1",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.0.1",
+    "eslint-plugin-standard": "^4.0.0",
     "tap": "^12.5.3"
   }
 }

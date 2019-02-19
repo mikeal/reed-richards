@@ -1,18 +1,20 @@
-
 let get = (data, key) => {
   key = key.split('.')
   while (key.length) {
-    data = data[key]
+    let k = key.shift()
+    data = data[k]
   }
   return data
 }
 
 class Collection {
-  constructor () {
+  constructor (...args) {
     this.data = new Map()
+    this.args = args
   }
-  add (row, ...args) {
+  add (row) {
     let data = this.data
+    let args = this.args.slice()
     while (args.length > 1) {
       let key = args.shift()
       let value = get(row, key)
@@ -22,41 +24,55 @@ class Collection {
       }
       data = data.get(value)
     }
-    let key = args.shift()
-    if (!data.has(key)) data.set(key, 1)
-    else data.set(data.get(key) + 1)
-    return new Mutation(data, row)
-
+    let key = args[0]
+    let value = get(row, key)
+    if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+    if (!data.has(value)) data.set(value, 1)
+    else data.set(value, data.get(value) + 1)
   }
   entries () {
     let iter = function * (row, data) {
       for (let [key, value] of data.entries()) {
-        row.push(key)
+        let _row = row.slice()
+        _row.push(key)
+        /* istanbul ignore else */ 
         if (typeof value === 'number') {
-          yield row.concat([value])
+          yield _row.concat([value])
         } else if (value instanceof Map) {
-          yield * iter(row, value)
+          yield * iter(_row, value)
+        } else {
+          throw new Error(`Interal data error: ${key} not Map or number`)
         }
       }
     }
     return iter([], this.data)
   }
   unique () {
-    return (function * () {
-      let key = null
-      let unique = new Set()
-      let row
-      for (row of this.entries()) {
-        let k = row[row.length - 3]
-        if (key === null) key = k
-        unique.add(k)
-        if (k !== key) {
-          yield row.slice(0, row.length -3).concat([unique.size])
-          unique = new Set()
+    const self = this
+    const toKey = value => JSON.stringify(value.slice(0, value.length - 2))
+    let iter = function * () {
+      let generator = self.entries()
+      let { value, done } = generator.next()
+      let key = toKey(value)
+      let i = 0
+      while (!done) {
+        let _key = toKey(value)
+        if (key === _key) {
+          i += 1
+        } else {
+          yield JSON.parse(key).concat([i])
+          i = 1
+          key = _key
         }
+        let next = generator.next()
+        value = next.value
+        done = next.done
       }
-      yield row.slice(0, row.length -3).concat([unique.size])
-    })()
+      yield JSON.parse(key).concat([i])
+    }
+    return iter()
   }
 }
+
+exports.collection = (...args) => new Collection(...args)
 

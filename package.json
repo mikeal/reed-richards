@@ -1,0 +1,15 @@
+{
+  "name": "reed-richards",
+  "version": "1.0.0",
+  "description": "Utilities for metrics processing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Mikeal Rogers <mikeal.rogers@gmail.com> (https://www.mikealrogers.com/)",
+  "license": "(Apache-2.0 AND MIT)",
+  "devDependencies": {
+    "tap": "^12.5.3"
+  }
+}

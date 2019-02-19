@@ -1,6 +1,6 @@
 {
   "name": "reed-richards",
-  "version": "1.0.0",
+  "version": "0.0.0-dev",
   "description": "Utilities for metrics processing",
   "main": "index.js",
   "scripts": {

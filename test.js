@@ -1,9 +1,9 @@
 const { test } = require('tap')
-const { collection } = require('./')
+const { collection, counter } = require('./')
 
 test('basic collection', t => {
   t.plan(1)
-  let c = collection('first', 'second', 'third')
+  let c = counter('first', 'second', 'third')
   let data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   let row = Array.from(c.rows())
@@ -12,7 +12,7 @@ test('basic collection', t => {
 
 test('basic counts', t => {
   t.plan(1)
-  let c = collection('first', 'second', 'third')
+  let c = counter('first', 'second', 'third')
   let data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   c.count(data)
@@ -25,7 +25,7 @@ test('basic counts', t => {
 
 test('basic unique', t => {
   t.plan(1)
-  let c = collection('first', 'second', 'third')
+  let c = counter('first', 'second', 'third')
   let data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   c.count(data)
@@ -39,7 +39,7 @@ test('basic unique', t => {
 
 test('error on undefined', t => {
   t.plan(4)
-  let c = collection('first', 'second')
+  let c = counter('first', 'second')
   try {
     c.count({})
   } catch (e) {
@@ -50,6 +50,7 @@ test('error on undefined', t => {
   } catch (e) {
     t.same(e.message, 'This row does not have a property: second')
   }
+  c = collection('first', 'second')
   try {
     c.set({})
   } catch (e) {
@@ -64,7 +65,7 @@ test('error on undefined', t => {
 
 test('object iteration', t => {
   t.plan(1)
-  let c = collection('first', 'second', 'third')
+  let c = counter('first', 'second', 'third')
   let data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   c.count(data)
@@ -82,7 +83,7 @@ test('object iteration', t => {
 
 test('object iteration w/ index', t => {
   t.plan(1)
-  let c = collection('first', 'second', 'third')
+  let c = counter('first', 'second', 'third')
   c.index('last', data => 'bar')
   let data = { first: 'one', second: 'two', third: 3 }
   c.count(data)

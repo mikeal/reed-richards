@@ -22,56 +22,12 @@ const fold = function * (row, data) {
   }
 }
 
-class Collection {
+class Base {
   constructor (...args) {
     this.data = new Map()
     this.args = args
     this._indexes = {}
     this._indexData = {}
-  }
-  set (row) {
-    let data = this.data
-    let args = this.args.slice()
-    let indexKey = []
-    while (args.length > 1) {
-      let key = args.shift()
-      let value = get(row, key)
-      if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
-      if (!data.has(value)) {
-        data.set(value, new Map())
-      }
-      data = data.get(value)
-      indexKey.push(value)
-    }
-    let key = args[0]
-    let value = get(row, key)
-    indexKey = JSON.stringify(indexKey)
-    this._writeIndexes(indexKey, row)
-    if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
-    data.set(key, value)
-  }
-  count (row) {
-    let data = this.data
-    let args = this.args.slice()
-    let indexKey = []
-    while (args.length > 1) {
-      let key = args.shift()
-      let value = get(row, key)
-      if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
-      if (!data.has(value)) {
-        data.set(value, new Map())
-      }
-      data = data.get(value)
-      indexKey.push(value)
-    }
-    let key = args[0]
-    let value = get(row, key)
-    indexKey.push(value)
-    indexKey = JSON.stringify(indexKey)
-    this._writeIndexes(indexKey, row)
-    if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
-    if (!data.has(value)) data.set(value, 1)
-    else data.set(value, data.get(value) + 1)
   }
   _writeIndexes (indexKey, data) {
     for (let key of Object.keys(this._indexes)) {
@@ -81,20 +37,6 @@ class Collection {
   }
   lookup (indexKey, complexKey) {
     return this._indexData[indexKey][JSON.stringify(complexKey)]
-  }
-  rowToObject (row, args, complexKey) {
-    args = args || this.args.slice()
-    let ret = {}
-    while (args.length) {
-      let k = args.shift()
-      ret[k] = row.shift()
-    }
-    complexKey = complexKey || Object.values(ret)
-    for (let _k of Object.keys(this._indexData)) {
-      ret[_k] = this.lookup(_k, complexKey)
-    }
-    ret.count = row[0]
-    return ret
   }
   objects () {
     const self = this
@@ -154,6 +96,80 @@ class Collection {
     }
     return iter()
   }
+  rowToObject (row, args, complexKey) {
+    args = args || this.args.slice()
+    let ret = {}
+
+    if (this instanceof Collection) {
+      while (args.length > 1) {
+        let k = args.shift()
+        ret[k] = row.shift()
+      }
+      ret[args[0]] = row[1]
+    } else {
+      while (args.length) {
+        let k = args.shift()
+        ret[k] = row.shift()
+      }
+    }
+    complexKey = complexKey || Object.values(ret)
+    for (let _k of Object.keys(this._indexData)) {
+      ret[_k] = this.lookup(_k, complexKey)
+    }
+    if (this instanceof Counter) ret.count = row[0]
+    return ret
+  }
+}
+
+class Counter extends Base {
+  count (row) {
+    let data = this.data
+    let args = this.args.slice()
+    let indexKey = []
+    while (args.length > 1) {
+      let key = args.shift()
+      let value = get(row, key)
+      if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+      if (!data.has(value)) {
+        data.set(value, new Map())
+      }
+      data = data.get(value)
+      indexKey.push(value)
+    }
+    let key = args[0]
+    let value = get(row, key)
+    indexKey.push(value)
+    indexKey = JSON.stringify(indexKey)
+    this._writeIndexes(indexKey, row)
+    if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+    if (!data.has(value)) data.set(value, 1)
+    else data.set(value, data.get(value) + 1)
+  }
+}
+
+class Collection extends Base {
+  set (row) {
+    let data = this.data
+    let args = this.args.slice()
+    let indexKey = []
+    while (args.length > 1) {
+      let key = args.shift()
+      let value = get(row, key)
+      if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+      if (!data.has(value)) {
+        data.set(value, new Map())
+      }
+      data = data.get(value)
+      indexKey.push(value)
+    }
+    let key = args[0]
+    let value = get(row, key)
+    indexKey = JSON.stringify(indexKey)
+    this._writeIndexes(indexKey, row)
+    if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+    data.set(key, value)
+  }
 }
 
 exports.collection = (...args) => new Collection(...args)
+exports.counter = (...args) => new Counter(...args)

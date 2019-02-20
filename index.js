@@ -146,7 +146,7 @@ class Collection {
           let complexKey = [key].concat(row.slice(0, row.length - 1))
           let strKey = JSON.stringify(row.slice(0, row.length - 1))
           let data = self.rowToObject(row, self.args.slice(1), complexKey)
-          let value = fn(prev[strKey], data)
+          let value = fn(prev[strKey], data, key)
           yield value
           prev[strKey] = value
         }

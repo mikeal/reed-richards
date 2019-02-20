@@ -11,13 +11,10 @@ const fold = function * (row, data) {
   for (let [key, value] of data.entries()) {
     let _row = row.slice()
     _row.push(key)
-    /* istanbul ignore else */
-    if (typeof value === 'number') {
-      yield _row.concat([value])
-    } else if (value instanceof Map) {
+    if (value instanceof Map) {
       yield * fold(_row, value)
     } else {
-      throw new Error(`Interal data error: ${key} not Map or number`)
+      yield _row.concat([value])
     }
   }
 }

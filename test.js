@@ -1,5 +1,5 @@
 const { test } = require('tap')
-const { collection, counter } = require('./')
+const { collection, counter, quarter } = require('./')
 
 test('basic collection', t => {
   t.plan(1)
@@ -116,4 +116,12 @@ test('reduce', t => {
   }
   let rows = Array.from(c.reduce(red))
   t.same(rows, [ 2000, 1000, 3000, 2000 ])
+})
+
+test('quarter', t => {
+  t.plan(4)
+  t.same(quarter(new Date('2018-01-02')), '2018 Q1')
+  t.same(quarter(new Date('2018-04-02')), '2018 Q2')
+  t.same(quarter(new Date('2018-08-02')), '2018 Q3')
+  t.same(quarter(new Date('2018-12-02')), '2018 Q4')
 })

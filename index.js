@@ -1,3 +1,19 @@
+const getQuarter = dt => {
+  dt = new Date(dt)
+  let quarter = dt.getFullYear() + ' '
+  let month = dt.getMonth()
+  if (month < 3) {
+    quarter += 'Q1'
+  } else if (month < 6) {
+    quarter += 'Q2'
+  } else if (month < 9) {
+    quarter += 'Q3'
+  } else {
+    quarter += 'Q4'
+  }
+  return quarter
+}
+
 const get = (data, key) => {
   key = key.split('.')
   while (key.length) {
@@ -170,3 +186,4 @@ class Collection extends Base {
 
 exports.collection = (...args) => new Collection(...args)
 exports.counter = (...args) => new Counter(...args)
+exports.quarter = getQuarter

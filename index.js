@@ -76,7 +76,9 @@ class Base {
         if (key === _key) {
           i += 1
         } else {
-          yield JSON.parse(key).concat([i])
+          let row = self.rowToObject(JSON.parse(key).concat([i]))
+          delete row.count
+          yield row
           i = 1
           key = _key
         }
@@ -84,7 +86,9 @@ class Base {
         value = next.value
         done = next.done
       }
-      yield JSON.parse(key).concat([i])
+      let row = self.rowToObject(JSON.parse(key).concat([i]))
+      delete row.count
+      yield row
     }
     return iter()
   }

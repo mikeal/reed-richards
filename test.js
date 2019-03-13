@@ -34,7 +34,11 @@ test('basic unique', t => {
   data.second = 'foo'
   c.count(data)
   let row = Array.from(c.unique())
-  t.same(row, [ [ 'one', 'two', 2 ], ['one', 'foo', 1] ])
+  let expected = [
+    { first: 'one', second: 'two', third: 2 },
+    { first: 'one', second: 'foo', third: 1 }
+  ]
+  t.same(row, expected)
 })
 
 test('error on undefined', t => {

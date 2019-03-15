@@ -69,26 +69,29 @@ class Base {
     let iter = function * () {
       let generator = self.rows()
       let { value, done } = generator.next()
-      let key = toKey(value)
-      let i = 0
-      while (!done) {
-        let _key = toKey(value)
-        if (key === _key) {
-          i += 1
-        } else {
-          let row = self.rowToObject(JSON.parse(key).concat([i]))
-          delete row.count
-          yield row
-          i = 1
-          key = _key
+      let key
+      if (!done) {
+        key = toKey(value)
+        let i = 0
+        while (!done) {
+          let _key = toKey(value)
+          if (key === _key) {
+            i += 1
+          } else {
+            let row = self.rowToObject(JSON.parse(key).concat([i]))
+            delete row.count
+            yield row
+            i = 1
+            key = _key
+          }
+          let next = generator.next()
+          value = next.value
+          done = next.done
         }
-        let next = generator.next()
-        value = next.value
-        done = next.done
+        let row = self.rowToObject(JSON.parse(key).concat([i]))
+        delete row.count
+        yield row
       }
-      let row = self.rowToObject(JSON.parse(key).concat([i]))
-      delete row.count
-      yield row
     }
     return iter()
   }

@@ -129,3 +129,9 @@ test('quarter', t => {
   t.same(quarter(new Date('2018-08-02')), '2018 Q3')
   t.same(quarter(new Date('2018-12-02')), '2018 Q4')
 })
+
+test('empty', t => {
+  t.plan(1)
+  let c = collection('asdf')
+  t.same(Array.from(c.unique()), [])
+})

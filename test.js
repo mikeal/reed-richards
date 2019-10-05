@@ -3,38 +3,38 @@ const { collection, counter, quarter } = require('./')
 
 test('basic collection', t => {
   t.plan(1)
-  let c = counter('first', 'second', 'third')
-  let data = { first: 'one', second: 'two', third: 3 }
+  const c = counter('first', 'second', 'third')
+  const data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
-  let row = Array.from(c.rows())
-  t.same(row, [ [ 'one', 'two', 3, 1 ] ])
+  const row = Array.from(c.rows())
+  t.same(row, [['one', 'two', 3, 1]])
 })
 
 test('basic counts', t => {
   t.plan(1)
-  let c = counter('first', 'second', 'third')
-  let data = { first: 'one', second: 'two', third: 3 }
+  const c = counter('first', 'second', 'third')
+  const data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   c.count(data)
   c.count(data)
   data.second = 'test'
   c.count(data)
-  let row = Array.from(c.rows())
-  t.same(row, [ [ 'one', 'two', 3, 3 ], ['one', 'test', 3, 1] ])
+  const row = Array.from(c.rows())
+  t.same(row, [['one', 'two', 3, 3], ['one', 'test', 3, 1]])
 })
 
 test('basic unique', t => {
   t.plan(1)
-  let c = counter('first', 'second', 'third')
-  let data = { first: 'one', second: 'two', third: 3 }
+  const c = counter('first', 'second', 'third')
+  const data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   c.count(data)
   data.third = 'test'
   c.count(data)
   data.second = 'foo'
   c.count(data)
-  let row = Array.from(c.unique())
-  let expected = [
+  const row = Array.from(c.unique())
+  const expected = [
     { first: 'one', second: 'two', third: 2 },
     { first: 'one', second: 'foo', third: 1 }
   ]
@@ -50,7 +50,7 @@ test('error on undefined', t => {
     t.same(e.message, 'This row does not have a property: first')
   }
   try {
-    c.count({ 'first': 'asdf' })
+    c.count({ first: 'asdf' })
   } catch (e) {
     t.same(e.message, 'This row does not have a property: second')
   }
@@ -61,7 +61,7 @@ test('error on undefined', t => {
     t.same(e.message, 'This row does not have a property: first')
   }
   try {
-    c.set({ 'first': 'asdf' })
+    c.set({ first: 'asdf' })
   } catch (e) {
     t.same(e.message, 'This row does not have a property: second')
   }
@@ -69,15 +69,15 @@ test('error on undefined', t => {
 
 test('object iteration', t => {
   t.plan(1)
-  let c = counter('first', 'second', 'third')
-  let data = { first: 'one', second: 'two', third: 3 }
+  const c = counter('first', 'second', 'third')
+  const data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   c.count(data)
   data.third = 'test'
   c.count(data)
   data.second = 'foo'
   c.count(data)
-  let rows = Array.from(c.objects())
+  const rows = Array.from(c.objects())
   t.same(rows, [
     { first: 'one', second: 'two', third: 3, count: 2 },
     { first: 'one', second: 'two', third: 'test', count: 1 },
@@ -87,16 +87,16 @@ test('object iteration', t => {
 
 test('object iteration w/ index', t => {
   t.plan(1)
-  let c = counter('first', 'second', 'third')
+  const c = counter('first', 'second', 'third')
   c.index('last', data => 'bar')
-  let data = { first: 'one', second: 'two', third: 3 }
+  const data = { first: 'one', second: 'two', third: 3 }
   c.count(data)
   c.count(data)
   data.third = 'test'
   c.count(data)
   data.second = 'foo'
   c.count(data)
-  let rows = Array.from(c.objects())
+  const rows = Array.from(c.objects())
   t.same(rows, [
     { first: 'one', second: 'two', third: 3, last: 'bar', count: 2 },
     { first: 'one', second: 'two', third: 'test', last: 'bar', count: 1 },
@@ -106,20 +106,20 @@ test('object iteration w/ index', t => {
 
 test('reduce', t => {
   t.plan(7)
-  let c = collection('quarter', 'lang', 'count')
+  const c = collection('quarter', 'lang', 'count')
   c.set({ quarter: 'q1', lang: 'ruby', count: 1000 })
   c.set({ quarter: 'q1', lang: 'ruby', count: 2000 })
   c.set({ quarter: 'q1', lang: 'js', count: 1000 })
   c.set({ quarter: 'q2', lang: 'ruby', count: 3000 })
   c.set({ quarter: 'q2', lang: 'js', count: 2000 })
 
-  let red = (prev, data) => {
+  const red = (prev, data) => {
     if (prev) t.ok(data.count - prev === 1000)
     t.ok(data)
     return data.count
   }
-  let rows = Array.from(c.reduce(red))
-  t.same(rows, [ 2000, 1000, 3000, 2000 ])
+  const rows = Array.from(c.reduce(red))
+  t.same(rows, [2000, 1000, 3000, 2000])
 })
 
 test('quarter', t => {
@@ -132,6 +132,6 @@ test('quarter', t => {
 
 test('empty', t => {
   t.plan(1)
-  let c = collection('asdf')
+  const c = collection('asdf')
   t.same(Array.from(c.unique()), [])
 })

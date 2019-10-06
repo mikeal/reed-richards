@@ -23,6 +23,19 @@ test('basic counts', t => {
   t.same(row, [['one', 'two', 3, 3], ['one', 'test', 3, 1]])
 })
 
+test('basic add', t => {
+  t.plan(1)
+  const c = counter('first', 'second', 'third')
+  const data = { first: 'one', second: 'two', third: 3 }
+  c.add(data, 2)
+  c.add(data, 2)
+  c.add(data, 2)
+  data.second = 'test'
+  c.add(data, 2)
+  const row = Array.from(c.rows())
+  t.same(row, [['one', 'two', 3, 6], ['one', 'test', 3, 2]])
+})
+
 test('basic unique', t => {
   t.plan(1)
   const c = counter('first', 'second', 'third')

@@ -150,7 +150,7 @@ class Base {
 }
 
 class Counter extends Base {
-  count (row) {
+  resolve (row) {
     let data = this.data
     const args = this.args.slice()
     let indexKey = []
@@ -170,6 +170,17 @@ class Counter extends Base {
     indexKey = JSON.stringify(indexKey)
     this._writeIndexes(indexKey, row)
     if (typeof value === 'undefined') throw new Error(`This row does not have a property: ${key}`)
+    return { indexKey, key, value, data }
+  }
+
+  add (row, increment) {
+    const { value, data } = this.resolve(row)
+    if (!data.has(value)) data.set(value, increment)
+    else data.set(value, data.get(value) + increment)
+  }
+
+  count (row) {
+    const { value, data } = this.resolve(row)
     if (!data.has(value)) data.set(value, 1)
     else data.set(value, data.get(value) + 1)
   }
